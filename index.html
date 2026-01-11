@@ -3,194 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAME-OR-NOT: CHAMPIONSHIP EDITION</title>
+    <title>LUDO-BLAST: THE TRIVIA SHOWDOWN</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Press+Start+2P&family=Roboto:wght@400;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Press+Start+2P&family=Orbitron:wght@400;900&display=swap');
 
         :root {
             --neon-pink: #ff2d55; --neon-blue: #00f2ff; --neon-green: #39ff14;
-            --neon-yellow: #fff200; --dark-bg: #050505; --panel: #1a1a1f;
+            --neon-yellow: #fff200; --dark-bg: #0d0d12; --panel: #16161e;
         }
 
-        body { background-color: var(--dark-bg); color: white; font-family: 'Roboto', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* SCREENS */
-        .screen { display: none; width: 100%; max-width: 1000px; flex-direction: column; align-items: center; }
-        .active-screen { display: flex; }
+        body { 
+            background-color: var(--dark-bg); color: white; font-family: 'Orbitron', sans-serif; 
+            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-x: hidden;
+        }
 
-        /* SETUP SCREEN */
-        .setup-box { background: var(--panel); border: 5px solid var(--neon-blue); padding: 40px; border-radius: 20px; text-align: center; margin-top: 50px; }
-        input { background: #000; border: 2px solid var(--neon-blue); color: white; padding: 10px; font-family: 'Bungee'; margin: 10px; font-size: 1.2rem; }
+        /* ANIMATIONS */
+        @keyframes pulse-blue { 0% { box-shadow: 0 0 5px var(--neon-blue); } 50% { box-shadow: 0 0 25px var(--neon-blue); } 100% { box-shadow: 0 0 5px var(--neon-blue); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        @keyframes glow-green { 0% { background: #000; } 100% { background: var(--neon-green); color: #000; box-shadow: 0 0 30px var(--neon-green); } }
 
-        /* SCOREBOARD */
-        .scoreboard { display: flex; justify-content: space-around; width: 100%; background: #111; border: 4px solid #333; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
-        .team-box { text-align: center; padding: 10px; border-radius: 10px; transition: 0.3s; width: 40%; }
-        .active-turn { background: #222; border: 2px solid var(--neon-yellow); box-shadow: 0 0 15px var(--neon-yellow); }
-        .team-name { font-family: 'Bungee', cursive; font-size: 1.2rem; }
-        .score-num { font-family: 'Press Start 2P', cursive; font-size: 2.5rem; margin: 10px 0; color: var(--neon-green); }
+        .screen { display: none; width: 100%; max-width: 1100px; flex-direction: column; }
+        .active-screen { display: flex; animation: slideIn 0.5s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* MAIN GAME */
-        .stage { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-        .monitor { background: var(--panel); border: 4px solid #333; border-radius: 15px; padding: 20px; text-align: center; }
-        .screen-inner { height: 200px; background: #000; border: 2px solid #444; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
-        
-        /* SWITCHES */
-        .console { background: var(--panel); border: 4px solid var(--neon-blue); border-radius: 15px; padding: 20px; }
-        .toggle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .switch-unit { background: #25252b; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .switch-label { font-family: 'Bungee'; font-size: 0.7rem; color: #888; }
-        
-        .switch { position: relative; width: 50px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
-        input:checked + .slider:before { transform: translateX(24px); }
+        /* HEADER & SCOREBOARD */
+        .scoreboard { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
+        .team-card { 
+            flex: 1; background: var(--panel); border: 3px solid #333; padding: 15px; border-radius: 15px; text-align: center;
+            transition: 0.3s; position: relative;
+        }
+        .active-team { border-color: var(--neon-yellow); animation: pulse-blue 2s infinite; }
+        .score { font-family: 'Press Start 2P', cursive; font-size: 2.5rem; color: var(--neon-green); margin: 10px 0; }
+        .team-label { font-family: 'Bungee'; font-size: 1.2rem; }
+
+        /* CASE DISPLAY */
+        .case-display { 
+            background: #000; border: 4px solid var(--neon-blue); border-radius: 20px; padding: 40px; 
+            text-align: center; margin-bottom: 30px; position: relative; overflow: hidden;
+        }
+        .case-display::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,242,255,0.05) 50%, rgba(0,0,0,0) 50%);
+            background-size: 100% 4px; z-index: 1; pointer-events: none;
+        }
+
+        /* OPTIONS */
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .opt-btn {
+            background: #1a1a1f; border: 2px solid #333; color: white; padding: 25px;
+            font-family: 'Orbitron'; font-size: 1rem; border-radius: 12px; cursor: pointer;
+            transition: 0.2s; text-align: left; position: relative;
+        }
+        .opt-btn:hover { border-color: var(--neon-blue); background: #222; }
+        .opt-btn span { color: var(--neon-blue); font-family: 'Bungee'; margin-right: 10px; font-size: 1.4rem; }
+
+        .correct { animation: glow-green 0.3s forwards; border-color: var(--neon-green); }
+        .wrong { animation: shake 0.3s; border-color: var(--neon-pink); background: #300 !important; }
+
+        /* FOOTER CHEAT SHEET */
+        .cheat-sheet {
+            display: flex; justify-content: space-around; background: #000; border: 2px solid #222;
+            padding: 15px; border-radius: 10px; margin-top: 30px; font-size: 0.75rem;
+        }
+        .def-item b { color: var(--neon-yellow); display: block; font-size: 0.9rem; margin-bottom: 2px; }
 
         /* BUTTONS */
-        .btn { font-family: 'Bungee'; padding: 15px 30px; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; margin: 10px; }
-        .btn-blue { background: var(--neon-blue); color: #000; }
-        .btn-pink { background: var(--neon-pink); color: #fff; box-shadow: 0 0 15px var(--neon-pink); }
-        .btn-bonus { background: var(--neon-yellow); color: #000; font-size: 1.5rem; display: none; }
-
-        .verdict { font-family: 'Bungee'; font-size: 4rem; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; }
+        .btn-ctrl { 
+            background: #222; color: #fff; border: 1px solid #444; padding: 5px 10px; 
+            cursor: pointer; font-family: 'Bungee'; font-size: 0.7rem; border-radius: 5px; 
+        }
+        .nav-next { 
+            margin-top: 20px; font-family: 'Bungee'; padding: 15px 40px; font-size: 1.5rem;
+            background: var(--neon-pink); border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
     </style>
 </head>
 <body>
 
-    <div id="setup-screen" class="screen active-screen">
-        <div class="setup-box">
-            <h1 style="font-family: 'Bungee'; color: var(--neon-yellow);">THE GAME SHOWDOWN</h1>
-            <p>ENTER TEAM NAMES</p>
-            <input type="text" id="name-a" placeholder="TEAM A NAME">
-            <input type="text" id="name-b" placeholder="TEAM B NAME">
-            <br>
-            <button class="btn btn-blue" onclick="startGame()">START TOURNAMENT</button>
+    <div id="setup-screen" class="screen active-screen" style="text-align: center; margin-top: 100px;">
+        <h1 style="font-family: 'Bungee'; font-size: 4rem; color: var(--neon-yellow); margin:0;">LUDO-BLAST</h1>
+        <p style="letter-spacing: 5px; color: var(--neon-blue);">ADVANCED LUDOLOGY SIMULATOR</p>
+        <div style="margin-top: 40px;">
+            <input type="text" id="name-a" placeholder="TEAM 1 NAME" style="padding:15px; font-family:'Bungee'; background:#000; border:2px solid var(--neon-blue); color:white; width: 300px;">
+            <input type="text" id="name-b" placeholder="TEAM 2 NAME" style="padding:15px; font-family:'Bungee'; background:#000; border:2px solid var(--neon-pink); color:white; width: 300px; margin-left: 10px;">
+            <br><br>
+            <button class="nav-next" onclick="startGame()">ENGAGE</button>
         </div>
     </div>
 
     <div id="game-screen" class="screen">
         <div class="scoreboard">
-            <div id="box-a" class="team-box active-turn">
-                <div id="disp-name-a" class="team-name" style="color: var(--neon-blue);">TEAM A</div>
-                <p id="score-a" class="score-num">00</p>
-                <button onclick="changeScore('a', 1)">+1</button>
+            <div id="box-a" class="team-card active-team">
+                <div id="disp-a" class="team-label" style="color: var(--neon-blue);">TEAM A</div>
+                <div id="score-a" class="score">00</div>
+                <button class="btn-ctrl" onclick="mod('a',1)">+ BONUS</button>
+                <button class="btn-ctrl" onclick="mod('a',-1)">-</button>
             </div>
             <div style="text-align: center;">
-                <p style="font-family: 'Bungee'; color: #555; margin: 0;">ROUND</p>
-                <h2 id="round-num" style="font-family: 'Bungee'; color: var(--neon-yellow); margin: 0;">1/10</h2>
+                <h3 id="round-num" style="color: var(--neon-yellow); margin-bottom: 5px;">ROUND 1/10</h3>
+                <div id="turn-txt" style="font-size: 0.8rem; color: #aaa;">INITIALIZING...</div>
             </div>
-            <div id="box-b" class="team-box">
-                <div id="disp-name-b" class="team-name" style="color: var(--neon-pink);">TEAM B</div>
-                <p id="score-b" class="score-num">00</p>
-                <button onclick="changeScore('b', 1)">+1</button>
-            </div>
-        </div>
-
-        <div class="stage">
-            <div class="monitor">
-                <div class="screen-inner"><h2 id="m-name" style="font-family: 'Bungee';">LOADING...</h2></div>
-                <p id="m-hook" style="font-style: italic; color: #aaa;"></p>
-            </div>
-            <div class="console">
-                <div class="toggle-grid">
-                    <div class="switch-unit"><span class="switch-label">RULES</span><label class="switch"><input type="checkbox" class="bit"><span class="slider"></span></label></div>
-                    <div class="switch-unit"><span class="switch-label">OBJECTIVES</span><label class="switch"><input type="checkbox" class="bit"><span class="slider"></span></label></div>
-                    <div class="switch-unit"><span class="switch-label">INTERACTION</span><label class="switch"><input type="checkbox" class="bit"><span class="slider"></span></label></div>
-                    <div class="switch-unit"><span class="switch-label">CHALLENGE</span><label class="switch"><input type="checkbox" class="bit"><span class="slider"></span></label></div>
-                    <div class="switch-unit"><span class="switch-label">FEEDBACK</span><label class="switch"><input type="checkbox" class="bit"><span class="slider"></span></label></div>
-                    <div class="switch-unit"><span class="switch-label">PARTICIPATION</span><label class="switch"><input type="checkbox" class="bit"><span class="slider"></span></label></div>
-                </div>
+            <div id="box-b" class="team-card">
+                <div id="disp-b" class="team-label" style="color: var(--neon-pink);">TEAM B</div>
+                <div id="score-b" class="score">00</div>
+                <button class="btn-ctrl" onclick="mod('b',1)">+ BONUS</button>
+                <button class="btn-ctrl" onclick="mod('b',-1)">-</button>
             </div>
         </div>
 
-        <div class="controls">
-            <button class="btn btn-pink" onclick="reveal()">LOCK IT IN!</button>
-            <button class="btn btn-blue" id="next-btn" onclick="nextRound()">NEXT ROUND >></button>
-            <button class="btn btn-bonus" id="bonus-btn" onclick="startBonus()">GO TO BONUS ROUND!</button>
+        <div class="case-display">
+            <h2 id="q-name" style="font-family: 'Bungee'; font-size: 2.5rem; margin: 0; color: var(--neon-blue);">THE CASE</h2>
+            <p id="q-desc" style="font-size: 1.2rem; color: #fff; margin: 15px 0;"></p>
+            <p id="q-explain" style="display:none; color: var(--neon-green); font-style: italic; border-top: 1px solid #333; padding-top: 10px;"></p>
+        </div>
+
+        <div class="options-grid">
+            <button class="opt-btn" onclick="hit(0)"><span>A</span> <div id="o0"></div></button>
+            <button class="opt-btn" onclick="hit(1)"><span>B</span> <div id="o1"></div></button>
+            <button class="opt-btn" onclick="hit(2)"><span>C</span> <div id="o2"></div></button>
+            <button class="opt-btn" onclick="hit(3)"><span>D</span> <div id="o3"></div></button>
+        </div>
+
+        <div style="text-align: center;">
+            <button id="next-btn" class="nav-next" style="display:none;" onclick="next()">NEXT ROUND >></button>
+            <button id="bonus-btn" class="nav-next" style="display:none; background: var(--neon-yellow); color:#000;" onclick="startBonus()">ACTIVATE BONUS ROUND</button>
+        </div>
+
+        <div class="cheat-sheet">
+            <div class="def-item"><b>RULES</b>Constraints</div>
+            <div class="def-item"><b>OBJECTIVES</b>Goals/Win-Loss</div>
+            <div class="def-item"><b>INTERACTION</b>Input/Output</div>
+            <div class="def-item"><b>CHALLENGE</b>Skill/Effort</div>
+            <div class="def-item"><b>FEEDBACK</b>System Response</div>
+            <div class="def-item"><b>PARTICIPATION</b>Active Doing</div>
         </div>
     </div>
 
-    <div id="pop" class="verdict"></div>
-
     <script>
-        const normalRounds = [
-            { n: "SLOT MACHINE", h: "High speed, high feedback. Is there skill?" },
-            { n: "BANDERSNATCH", h: "Interactive Netflix. Can you actually lose?" },
-            { n: "PELOTON", h: "Fitness with a leaderboard. Is it a sport or a game?" },
-            { n: "IKEA MANUAL", h: "Rules and objectives. Is building a table play?" },
-            { n: "STOCK MARKET", h: "The ultimate score. Who set the rules?" },
-            { n: "TOY STORY", h: "Watching a movie. Zero interaction?" },
-            { n: "FLIGHT SIM", h: "Extreme realism. Where is the conflict?" },
-            { n: "MARIO PARTY", h: "Clearly a game. But is it mostly LUCK?" },
-            { n: "AMAZON WAREHOUSE", h: "Scan items, hit quotas, get points. Is work a game?" },
-            { n: "GOOGLING", h: "Information retrieval. Is there an objective?" }
+        const lib = [
+            { n: "THE SLOT MACHINE", d: "High lights, loud sounds, and a 'pull' mechanic.", o: ["A Game: Rules and high feedback.", "Not a Game: Lacks Player Agency/Challenge.", "A Game: Clear win/loss state.", "Not a Game: It's physical, not digital."], c: 1, e: "Without player skill/strategy (Challenge), it's a gambling system, not a game." },
+            { n: "BANDERSNATCH", d: "Netflix film where you click to choose the path.", o: ["Interactive Media: Lacks a Failure State/Skill.", "A Game: Choice equals gameplay.", "Not a Game: It's just a long movie.", "A Game: It uses a controller."], c: 0, e: "Lacks 'Challenge' and 'Win/Loss' objectives; it's a branching narrative." },
+            { n: "EXCEL SPREADSHEETS", d: "Cells, math, and logical input/output rules.", o: ["A Game: It has rules and interaction.", "Not a Game: Lacks play-focused Objectives.", "A Game: Solving a formula is a challenge.", "Not a Game: It's boring."], c: 1, e: "It's a Tool. Systems need ludic objectives (goals for play) to be games." },
+            { n: "PROFESSIONAL TAG", d: "Adults chasing each other in a structured arena.", o: ["Not a Game: Tag is for children.", "A Game: Rules, Interaction, and clear Objective.", "Interactive Media: No digital screen used.", "A Tool: It's for fitness training."], c: 1, e: "Meets all 6 criteria perfectly, regardless of the 'medium' (physical vs digital)." },
+            { n: "PELOTON BIKE", d: "Exercise bike with a live leaderboard and points.", o: ["A Game: High feedback and competition.", "Gamified Tool: Work/Fitness with game layers.", "Not a Game: It requires physical effort.", "A Game: You can win the race."], c: 1, e: "This is 'Gamification'—applying game elements to non-game tasks (Exercise)." },
+            { n: "THE STOCK MARKET", d: "Buying/selling shares based on global data.", o: ["A Game: Clear score (money) and rules.", "Not a Game: No set 'Win/Loss' or game bounds.", "A Game: It's the highest stakes game on Earth.", "Not a Game: It lacks feedback."], c: 1, e: "An open system/utility. It has no artificial conflict or ludic objectives." },
+            { n: "FLIGHT SIMULATOR", d: "Perfectly recreating a Boeing 747 flight to London.", o: ["A Game: Pilots find it difficult.", "A Simulation: Lacks ludic goals (Win/Loss).", "A Game: It has a clear objective (Land).", "Interactive Media: It's just a video."], c: 1, e: "Simulators focus on 'Mimicry' and 'Rules' but often lack game 'Objectives'." },
+            { n: "CONWAY'S GAME OF LIFE", d: "Cells that live or die based on math with zero player input.", o: ["A Game: It has 'Game' in the title.", "Not a Game: Lacks Participation/Interaction.", "A Game: It has rules and feedback.", "A Tool: It's used for biology study."], c: 1, e: "It's a 'Zero-Player Game'—more of a mathematical toy than a game." },
+            { n: "ESCAPE ROOM", d: "Locked in a room with 60 minutes to solve puzzles.", o: ["Interactive Media: It's a live event.", "A Game: Rules, Objectives, Challenge, Feedback.", "A Tool: It's for team building only.", "Not a Game: No digital participation."], c: 1, e: "A perfect analog game. Digital screens are not a requirement for ludology!" },
+            { n: "TINDER / DATING APPS", d: "Swiping, matching, and messaging 'players'.", o: ["A Game: Swiping is an interaction loop.", "A Tool: It's a utility for social connection.", "Gamified Tool: Uses feedback loops for utility.", "A Game: You win when you get a date."], c: 2, e: "Uses game-like 'Feedback' and 'Interaction' to facilitate a real-world utility." }
         ];
 
-        const bonusRounds = [
-            { n: "EVOLUTION", h: "Rules (DNA), Win State (Survival). Is Nature a Game Designer?" },
-            { n: "A FIRST DATE", h: "Interaction, high feedback, clear win/loss. Is romance a game?" },
-            { n: "WAR REENACTMENT", h: "Rules and interaction. But if the outcome is pre-decided, is it a game?" }
+        const bonus = [
+            { n: "THE UNITED NATIONS", d: "Nations negotiating under strict international rules.", o: ["A Game: Rules, interaction, and win/loss.", "Not a Game: The consequences are non-ludic (real).", "A Game: Diplomats play for power.", "Interactive Media: They use microphones."], c: 1, e: "Games are 'Separate' from real life. When consequences are real, it's not a game." },
+            { n: "EVOLUTION", d: "DNA rules and the 'Win State' of species survival.", o: ["A Game: Nature is the designer.", "Not a Game: Lacks conscious Agency/Participation.", "A Game: Survival is the ultimate objective.", "A Simulation: Nature is just math."], c: 1, e: "Games require 'Players'—conscious agents choosing to participate." }
         ];
 
-        let cur = 0, scoreA = 0, scoreB = 0, isBonus = false;
+        let cur = 0, scA = 0, scB = 0, locked = false, isB = false;
 
         function startGame() {
-            document.getElementById('disp-name-a').innerText = document.getElementById('name-a').value || "TEAM A";
-            document.getElementById('disp-name-b').innerText = document.getElementById('name-b').value || "TEAM B";
-            showScreen('game-screen');
-            update();
+            document.getElementById('disp-a').innerText = document.getElementById('name-a').value || "TEAM A";
+            document.getElementById('disp-b').innerText = document.getElementById('name-b').value || "TEAM B";
+            document.getElementById('setup-screen').classList.remove('active-screen');
+            document.getElementById('game-screen').classList.add('active-screen');
+            load();
         }
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-            document.getElementById(id).classList.add('active-screen');
+        function load() {
+            locked = false;
+            const q = isB ? bonus[cur] : lib[cur];
+            document.getElementById('q-name').innerText = q.n;
+            document.getElementById('q-desc').innerText = q.d;
+            document.getElementById('q-explain').style.display = "none";
+            document.getElementById('next-btn').style.display = "none";
+            document.getElementById('round-num').innerText = `ROUND ${cur+1}/${isB ? bonus.length : lib.length}`;
+            document.getElementById('turn-txt').innerText = (cur % 2 === 0) ? `${document.getElementById('disp-a').innerText}'S TURN` : `${document.getElementById('disp-b').innerText}'S TURN`;
+            
+            for(let i=0; i<4; i++) {
+                const b = document.querySelectorAll('.opt-btn')[i];
+                b.className = 'opt-btn';
+                document.getElementById('o'+i).innerText = q.o[i];
+            }
+            document.getElementById('box-a').classList.toggle('active-team', cur % 2 === 0);
+            document.getElementById('box-b').classList.toggle('active-team', cur % 2 !== 0);
         }
 
-        function changeScore(t, v) {
-            if(t==='a'){ scoreA += v; document.getElementById('score-a').innerText = scoreA.toString().padStart(2,'0'); }
-            else { scoreB += v; document.getElementById('score-b').innerText = scoreB.toString().padStart(2,'0'); }
+        function hit(idx) {
+            if(locked) return;
+            locked = true;
+            const q = isB ? bonus[cur] : lib[cur];
+            const btns = document.querySelectorAll('.opt-btn');
+            if(idx === q.c) {
+                btns[idx].classList.add('correct');
+                if(cur % 2 === 0) mod('a', 1); else mod('b', 1);
+            } else {
+                btns[idx].classList.add('wrong');
+                btns[q.c].classList.add('correct');
+            }
+            document.getElementById('q-explain').innerText = q.e;
+            document.getElementById('q-explain').style.display = "block";
+            
+            if(!isB && cur === lib.length-1) document.getElementById('bonus-btn').style.display = "inline-block";
+            else document.getElementById('next-btn').style.display = "inline-block";
         }
 
-        function update() {
-            const list = isBonus ? bonusRounds : normalRounds;
-            const item = list[cur];
-            document.getElementById('m-name').innerText = item.n;
-            document.getElementById('m-hook').innerText = item.h;
-            document.getElementById('round-num').innerText = (cur + 1) + "/" + list.length;
-            document.querySelectorAll('.bit').forEach(i => i.checked = false);
-            document.getElementById('box-a').classList.toggle('active-turn', cur % 2 === 0);
-            document.getElementById('box-b').classList.toggle('active-turn', cur % 2 !== 0);
+        function mod(t, v) {
+            if(t==='a') { scA += v; document.getElementById('score-a').innerText = scA.toString().padStart(2,'0'); }
+            else { scB += v; document.getElementById('score-b').innerText = scB.toString().padStart(2,'0'); }
         }
 
-        function reveal() {
-            const bits = document.querySelectorAll('.bit:checked').length;
-            const p = document.getElementById('pop'); p.style.display = "block";
-            if(bits >= 5){ p.innerText="GAME ON!"; p.style.color="var(--neon-green)"; }
-            else if(bits >= 3){ p.innerText="BORDERLINE"; p.style.color="var(--neon-yellow)"; }
-            else { p.innerText="NO GAME!"; p.style.color="var(--neon-pink)"; }
-            setTimeout(() => { p.style.display="none"; }, 2000);
-        }
-
-        function nextRound() {
-            cur++;
-            if(!isBonus && cur >= normalRounds.length) {
-                document.getElementById('next-btn').style.display = "none";
-                document.getElementById('bonus-btn').style.display = "block";
-                const winName = scoreA > scoreB ? document.getElementById('disp-name-a').innerText : document.getElementById('disp-name-b').innerText;
-                document.getElementById('m-name').innerText = "WINNER: " + winName;
-                document.getElementById('m-hook').innerText = "UNLOCKED: THE GAMER GOD BONUS ROUND!";
-            } else if (isBonus && cur >= bonusRounds.length) {
-                document.getElementById('m-name').innerText = "TOURNAMENT OVER";
-            } else { update(); }
-        }
-
-        function startBonus() {
-            isBonus = true; cur = 0;
-            document.getElementById('bonus-btn').style.display = "none";
-            document.getElementById('next-btn').style.display = "block";
-            update();
-        }
+        function next() { cur++; load(); }
+        function startBonus() { isB = true; cur = 0; document.getElementById('bonus-btn').style.display="none"; load(); }
     </script>
 </body>
 </html>
