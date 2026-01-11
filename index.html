@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Studies: The Ludology Rubric</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --accent: #38bdf8;
+            --text: #f1f5f9;
+            --success: #4ade80;
+            --warning: #fbbf24;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: var(--accent); margin-bottom: 5px; }
+        p.subtitle { opacity: 0.8; margin-top: 0; }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .case-studies {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .case-btn {
+            width: 100%;
+            background: #334155;
+            color: white;
+            border: none;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.2s;
+        }
+
+        .case-btn:hover { background: #475569; }
+        .case-btn.active { border-left: 5px solid var(--accent); background: #475569; }
+
+        .rubric {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .criterion {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .criterion label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .options { display: flex; gap: 10px; }
+        
+        .opt-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #475569;
+            background: transparent;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .opt-btn.selected { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: bold; }
+
+        .result-panel {
+            grid-column: 1 / -1;
+            background: #020617;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px dashed var(--accent);
+        }
+
+        #score-display { font-size: 2rem; font-weight: bold; color: var(--accent); }
+        #verdict { font-size: 1.2rem; margin: 10px 0; }
+
+        @media (max-width: 600px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>The Ludology Rubric</h1>
+    <p class="subtitle">Course: Game Studies | Activity: Is it a Game?</p>
+</header>
+
+<div class="container">
+    <div class="case-studies">
+        <h3>1. Select Media Case</h3>
+        <button class="case-btn" onclick="selectCase(this, 'Slot Machine')">Slot Machine (Casino)</button>
+        <button class="case-btn" onclick="selectCase(this, 'Bandersnatch')">Bandersnatch (Netflix Movie)</button>
+        <button class="case-btn" onclick="selectCase(this, 'Flight Sim')">Microsoft Flight Simulator</button>
+        <button class="case-btn" onclick="selectCase(this, 'Proteus')">Proteus (Walking Simulator)</button>
+        <button class="case-btn" onclick="selectCase(this, 'Google Pacman')">Google Maps Pac-Man</button>
+        <div id="case-desc" style="font-size: 0.9rem; font-style: italic; color: var(--accent); margin-top: 15px;">Select a case to begin...</div>
+    </div>
+
+    <div class="rubric">
+        <h3>2. Analyze Criteria</h3>
+        
+        <div class="criterion" data-crit="agency">
+            <label>Agency (Choice)</label>
+            <div class="options">
+                <button class="opt-btn" onclick="setScore('agency', 0, this)">Spectator (0)</button>
+                <button class="opt-btn" onclick="setScore('agency', 1, this)">Participant (1)</button>
+            </div>
+        </div>
+
+        <div class="criterion" data-crit="outcome">
+            <label>Win/Loss State</label>
+            <div class="options">
+                <button class="opt-btn" onclick="setScore('outcome', 0, this)">None (0)</button>
+                <button class="opt-btn" onclick="setScore('outcome', 1, this)">Clear (1)</button>
+            </div>
+        </div>
+
+        <div class="criterion" data-crit="rules">
+            <label>System Rules</label>
+            <div class="options">
+                <button class="opt-btn" onclick="setScore('rules', 0, this)">Fixed (0)</button>
+                <button class="opt-btn" onclick="setScore('rules', 1, this)">Dynamic (1)</button>
+            </div>
+        </div>
+
+        <div class="criterion" data-crit="challenge">
+            <label>Skill/Effort</label>
+            <div class="options">
+                <button class="opt-btn" onclick="setScore('challenge', 0, this)">Passive (0)</button>
+                <button class="opt-btn" onclick="setScore('challenge', 1, this)">Active (1)</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-panel">
+        <h3>Final Analysis</h3>
+        <div id="score-display">0 / 4</div>
+        <div id="verdict">Please complete the rubric.</div>
+        <p id="logic-note" style="font-size: 0.8rem; opacity: 0.7;">Score 3+ usually indicates a formal "Game".</p>
+    </div>
+</div>
+
+<script>
+    let scores = { agency: 0, outcome: 0, rules: 0, challenge: 0 };
+    const descriptions = {
+        'Slot Machine': 'Analysis: High feedback, but is there real choice (Agency)?',
+        'Bandersnatch': 'Analysis: Branching narrative. Does it have a Win/Loss state?',
+        'Flight Sim': 'Analysis: High technical challenge, but where is the objective?',
+        'Proteus': 'Analysis: Exploration focused. Is conflict necessary for a game?',
+        'Google Pacman': 'Analysis: A utility tool transformed into a play-space.'
+    };
+
+    function selectCase(btn, caseName) {
+        document.querySelectorAll('.case-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('case-desc').innerText = descriptions[caseName];
+    }
+
+    function setScore(crit, val, btn) {
+        scores[crit] = val;
+        // UI toggle
+        const parent = btn.parentElement;
+        parent.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        const total = scores.agency + scores.outcome + scores.rules + scores.challenge;
+        document.getElementById('score-display').innerText = total + " / 4";
+        
+        let verdictText = "";
+        if (total >= 3) {
+            verdictText = "VERDICT: This is a GAME.";
+            document.getElementById('score-display').style.color = "#4ade80";
+        } else if (total === 2) {
+            verdictText = "VERDICT: Borderline / Interactive Media.";
+            document.getElementById('score-display').style.color = "#fbbf24";
+        } else {
+            verdictText = "VERDICT: Not a Game (Spectator Media).";
+            document.getElementById('score-display').style.color = "#f87171";
+        }
+        document.getElementById('verdict').innerText = verdictText;
+    }
+</script>
+
+</body>
+</html>
