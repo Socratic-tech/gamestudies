@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAME DETECTOR: EXPERT MODE</title>
+    <title>GAME DETECTOR: DOUBLE WAGER</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Press+Start+2P&family=Outfit:wght@400;900&display=swap');
 
         :root {
             --neon-pink: #ff2d55; --neon-blue: #00f2ff; --neon-green: #39ff14;
-            --neon-yellow: #fff200; --dark-bg: #08080a; --panel: #121217;
+            --neon-yellow: #fff200; --dark-bg: #050508; --panel: #111116;
         }
 
         body { 
@@ -17,235 +17,223 @@
             margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
 
-        /* HIGH-END ANIMATIONS */
-        @keyframes border-glow { 0% { border-color: #333; } 50% { border-color: var(--neon-blue); } 100% { border-color: #333; } }
-        @keyframes fail-shake { 0% { transform: translateX(0); } 25% { transform: translateX(-10px) rotate(-1deg); } 75% { transform: translateX(10px) rotate(1deg); } 100% { transform: translateX(0); } }
-        @keyframes success-zoom { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 30px var(--neon-green); } 100% { transform: scale(1); } }
+        /* ANIMATIONS */
+        @keyframes glitch { 0% { text-shadow: 2px 0 var(--neon-pink); } 50% { text-shadow: -2px 0 var(--neon-blue); } 100% { text-shadow: 2px 0 var(--neon-pink); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 
         .screen { display: none; width: 100%; max-width: 1100px; flex-direction: column; }
-        .active-screen { display: flex; animation: fadeIn 0.4s ease-in; }
+        .active-screen { display: flex; animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* SCOREBOARD */
-        .scoreboard { display: flex; justify-content: space-between; width: 100%; margin-bottom: 20px; }
+        .scoreboard { display: flex; justify-content: space-between; width: 100%; margin-bottom: 20px; gap: 20px; }
         .team-pod { 
-            flex: 1; background: var(--panel); border: 4px solid #222; padding: 20px; border-radius: 25px; text-align: center;
-            transition: 0.3s; position: relative;
+            flex: 1; background: var(--panel); border: 4px solid #222; padding: 20px; border-radius: 20px; text-align: center;
         }
-        .active-team { border-color: var(--neon-yellow); box-shadow: 0 0 30px rgba(255, 242, 0, 0.2); }
-        .score { font-family: 'Press Start 2P', cursive; font-size: 3rem; color: #fff; margin: 15px 0; text-shadow: 0 0 10px var(--neon-green); }
+        .active-team { border-color: var(--neon-yellow); box-shadow: 0 0 20px rgba(255, 242, 0, 0.3); }
+        .score { font-family: 'Press Start 2P', cursive; font-size: 2.5rem; margin: 10px 0; color: var(--neon-green); }
 
-        /* QUESTION AREA */
-        .question-box {
-            background: #000; border: 2px solid #333; border-radius: 30px; padding: 50px; 
-            text-align: center; margin-bottom: 30px; animation: border-glow 4s infinite;
+        /* MAIN DISPLAY */
+        .display-box {
+            background: #000; border: 3px solid var(--neon-blue); border-radius: 25px; padding: 40px; 
+            text-align: center; margin-bottom: 25px;
         }
-        h2 { font-family: 'Bungee'; font-size: 2.5rem; margin: 0; color: var(--neon-blue); }
-        .expert-tag { background: var(--neon-pink); color: white; padding: 5px 15px; border-radius: 5px; font-family: 'Bungee'; font-size: 0.8rem; display: inline-block; margin-bottom: 10px; }
+        h2 { font-family: 'Bungee'; color: var(--neon-yellow); margin: 0; }
 
         /* OPTIONS */
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
         .opt-btn {
-            background: #1a1a1f; border: 3px solid #333; color: #aaa; padding: 35px;
-            font-family: 'Bungee'; font-size: 1.4rem; border-radius: 20px; cursor: pointer;
-            transition: 0.2s;
+            background: #1a1a1f; border: 3px solid #333; color: #fff; padding: 30px;
+            font-family: 'Bungee'; font-size: 1.2rem; border-radius: 15px; cursor: pointer; transition: 0.2s;
         }
-        .opt-btn:hover { border-color: var(--neon-blue); color: #fff; transform: translateY(-3px); }
+        .opt-btn:hover { border-color: var(--neon-blue); }
+        .is-correct { background: var(--neon-green) !important; color: #000 !important; }
+        .is-wrong { background: var(--neon-pink) !important; animation: shake 0.3s; }
 
-        .is-correct { background: var(--neon-green) !important; color: #000 !important; border-color: #fff !important; animation: success-zoom 0.5s; }
-        .is-wrong { background: var(--neon-pink) !important; color: #fff !important; border-color: #fff !important; animation: fail-shake 0.3s; }
+        /* WAGER & FINAL PHASE */
+        .wager-container { display: flex; gap: 20px; justify-content: center; margin-top: 20px; }
+        .wager-card { background: #111; border: 3px solid #444; padding: 30px; border-radius: 20px; text-align: center; flex: 1; }
+        .wager-input { background: #000; border: 2px solid var(--neon-pink); color: white; font-family: 'Press Start 2P'; padding: 15px; width: 80%; font-size: 1.5rem; text-align: center; margin: 15px 0; }
+        
+        .vote-panel { display: flex; justify-content: space-between; gap: 40px; width: 100%; margin-top: 30px; }
+        .vote-box { flex: 1; text-align: center; padding: 20px; border: 2px dashed #444; border-radius: 20px; }
+        .locked-in { background: #002200 !important; border-color: var(--neon-green) !important; color: var(--neon-green) !important; }
 
-        /* FEEDBACK */
-        .feedback {
-            margin-top: 25px; padding: 25px; border-radius: 20px; font-size: 1.3rem;
-            display: none; background: #111; border: 2px solid var(--neon-blue);
-            line-height: 1.5; color: #ddd;
-        }
-        .feedback b { color: var(--neon-yellow); }
-
-        /* CONTROLS */
-        .nav-btn {
-            margin-top: 30px; font-family: 'Bungee'; padding: 20px 60px; font-size: 1.5rem;
-            background: var(--neon-blue); border: none; border-radius: 50px; cursor: pointer;
-            color: #000; display: none; align-self: center; box-shadow: 0 0 20px var(--neon-blue);
-        }
-
-        /* CHEAT SHEET */
-        .cheat-sheet {
-            display: flex; justify-content: space-around; background: #000; border-top: 2px solid #333;
-            padding: 20px; margin-top: auto; font-size: 0.8rem; width: 100%;
-        }
-        .cheat-sheet div b { color: var(--neon-pink); display: block; margin-bottom: 3px; }
+        /* BUTTONS */
+        .btn-nav { font-family: 'Bungee'; padding: 15px 40px; font-size: 1.4rem; border: none; border-radius: 50px; cursor: pointer; margin-top: 20px; align-self: center; background: var(--neon-blue); color: #000; }
+        .btn-vote { font-family: 'Bungee'; padding: 10px 20px; width: 100%; margin: 5px 0; cursor: pointer; border-radius: 10px; border: none; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
-    <div id="setup-screen" class="screen active-screen" style="text-align: center; margin-top: 80px;">
-        <div class="expert-tag">LEVEL: BRUTAL</div>
-        <h1 style="font-family: 'Bungee'; font-size: 5rem; color: #fff; margin:0;">GAME DETECTOR</h1>
-        <p style="font-family: 'Bungee'; color: var(--neon-blue); letter-spacing: 4px;">FIND THE TRUE SYSTEM</p>
-        
-        <div style="margin-top: 50px;">
-            <input type="text" id="name-a" placeholder="TEAM 1" style="padding:15px; font-family:'Bungee'; background:#111; border:2px solid #333; color:white; width: 300px; text-align: center; font-size: 1.2rem;">
-            <input type="text" id="name-b" placeholder="TEAM 2" style="padding:15px; font-family:'Bungee'; background:#111; border:2px solid #333; color:white; width: 300px; text-align: center; font-size: 1.2rem; margin-left: 10px;">
-            <br><br>
-            <button class="nav-btn" style="display:inline-block;" onclick="startGame()">INITIALIZE TEST</button>
+    <div id="setup-screen" class="screen active-screen">
+        <div style="text-align: center; margin-top: 80px;">
+            <h1 style="font-family:'Bungee'; font-size: 4.5rem; animation: glitch 3s infinite;">GAME DETECTOR</h1>
+            <p style="color: var(--neon-blue); font-family: 'Bungee'; letter-spacing: 5px;">THE FINAL DUEL</p>
+            <div style="margin-top: 50px; background: var(--panel); padding: 40px; border-radius: 30px; border: 2px solid #333;">
+                <input type="text" id="name-a" placeholder="TEAM 1" style="padding:15px; font-family:'Bungee'; background:#000; color:white; border:2px solid var(--neon-blue); width: 280px; text-align: center;">
+                <input type="text" id="name-b" placeholder="TEAM 2" style="padding:15px; font-family:'Bungee'; background:#000; color:white; border:2px solid var(--neon-pink); width: 280px; text-align: center; margin-left: 10px;">
+                <br><br>
+                <button class="btn-nav" onclick="startGame()">START SESSION</button>
+            </div>
         </div>
     </div>
 
     <div id="game-screen" class="screen">
         <div class="scoreboard">
             <div id="box-a" class="team-pod active-team">
-                <div id="disp-a" style="font-family: 'Bungee'; color: var(--neon-blue);">TEAM A</div>
+                <div id="disp-a" style="font-family: 'Bungee'; color: var(--neon-blue);">TEAM 1</div>
                 <div id="score-a" class="score">00</div>
-                <button onclick="mod('a', 1)" style="font-family: 'Bungee'; border:none; background:#333; color:white; cursor:pointer; border-radius:5px;">+ BONUS</button>
+                <button onclick="mod('a', 1)" style="font-family:'Bungee'; background:#222; border:none; color:#888; cursor:pointer;">+ BONUS</button>
             </div>
             <div style="text-align: center; padding-top: 20px;">
                 <h3 id="round-num" style="color: var(--neon-yellow); font-family: 'Bungee'; font-size: 2rem; margin:0;">1/10</h3>
-                <div id="turn-txt" style="font-family: 'Bungee'; font-size: 0.7rem; color: #555; margin-top:5px;">TEAM 1 TURN</div>
+                <div id="turn-txt" style="font-family: 'Bungee'; font-size: 0.7rem; color: #555;">TEAM 1 TURN</div>
             </div>
             <div id="box-b" class="team-pod">
-                <div id="disp-b" style="font-family: 'Bungee'; color: var(--neon-pink);">TEAM B</div>
+                <div id="disp-b" style="font-family: 'Bungee'; color: var(--neon-pink);">TEAM 2</div>
                 <div id="score-b" class="score">00</div>
-                <button onclick="mod('b', 1)" style="font-family: 'Bungee'; border:none; background:#333; color:white; cursor:pointer; border-radius:5px;">+ BONUS</button>
+                <button onclick="mod('b', 1)" style="font-family:'Bungee'; background:#222; border:none; color:#888; cursor:pointer;">+ BONUS</button>
             </div>
         </div>
 
-        <div class="question-box">
-            <h2 id="q-text">WHICH OF THESE IS A FORMAL GAME?</h2>
+        <div class="display-box">
+            <h2 id="q-text">SCANNING SYSTEM...</h2>
+            <div id="feedback" style="display:none; color: var(--neon-green); margin-top: 15px; font-weight: bold; border-top: 1px solid #333; padding-top: 10px;"></div>
         </div>
 
-        <div class="options-grid">
+        <div class="options-grid" id="opt-container">
             <button class="opt-btn" onclick="check(0)" id="o0"></button>
             <button class="opt-btn" onclick="check(1)" id="o1"></button>
             <button class="opt-btn" onclick="check(2)" id="o2"></button>
             <button class="opt-btn" onclick="check(3)" id="o3"></button>
         </div>
+        <button id="next-btn" class="btn-nav" style="display:none;" onclick="next()">PROCEED >></button>
+    </div>
 
-        <div id="feedback" class="feedback"></div>
-        <button id="next-btn" class="nav-btn" onclick="next()">NEXT ROUND >></button>
-
-        <div class="cheat-sheet">
-            <div><b>RULES</b>The Limits</div>
-            <div><b>GOALS</b>Win or Lose</div>
-            <div><b>INTERACTION</b>Choices</div>
-            <div><b>CHALLENGE</b>Effort</div>
-            <div><b>RESPONSE</b>Feedback</div>
-            <div><b>DOING</b>Participation</div>
+    <div id="wager-screen" class="screen">
+        <h1 style="font-family: 'Bungee'; text-align: center; color: var(--neon-pink);">PLACE YOUR WAGERS</h1>
+        <div class="wager-container">
+            <div class="wager-card" style="border-color: var(--neon-blue);">
+                <h3 id="w-name-a" style="font-family:'Bungee';">TEAM 1</h3>
+                <input type="number" id="wager-a" class="wager-input" value="0">
+                <p>MAX: <span id="max-a">0</span></p>
+            </div>
+            <div class="wager-card" style="border-color: var(--neon-pink);">
+                <h3 id="w-name-b" style="font-family:'Bungee';">TEAM 2</h3>
+                <input type="number" id="wager-b" class="wager-input" value="0">
+                <p>MAX: <span id="max-b">0</span></p>
+            </div>
         </div>
+        <button class="btn-nav" onclick="lockWagers()">LOCK IN WAGERS</button>
+    </div>
+
+    <div id="final-screen" class="screen">
+        <div class="display-box" style="border-color: var(--neon-yellow);">
+            <h1 style="font-family:'Bungee'; color:var(--neon-yellow);">THE CHAMPIONSHIP CASE</h1>
+            <p id="final-desc" style="font-size: 1.3rem; line-height: 1.6;"></p>
+        </div>
+        
+        <div class="vote-panel">
+            <div class="vote-box" id="vote-a">
+                <h3 id="v-name-a" style="font-family:'Bungee'; color:var(--neon-blue);">TEAM 1</h3>
+                <button class="btn-vote" id="va-t" onclick="cast('a', true)" style="background:#222; color:white;">IS A GAME</button>
+                <button class="btn-vote" id="va-f" onclick="cast('a', false)" style="background:#222; color:white;">NOT A GAME</button>
+            </div>
+            <div class="vote-box" id="vote-b">
+                <h3 id="v-name-b" style="font-family:'Bungee'; color:var(--neon-pink);">TEAM 2</h3>
+                <button class="btn-vote" id="vb-t" onclick="cast('b', true)" style="background:#222; color:white;">IS A GAME</button>
+                <button class="btn-vote" id="vb-f" onclick="cast('b', false)" style="background:#222; color:white;">NOT A GAME</button>
+            </div>
+        </div>
+        <button id="reveal-btn" class="btn-nav" style="display:none;" onclick="resolveDuel()">REVEAL TRUTH</button>
     </div>
 
     <script>
         const rounds = [
-            { 
-                opts: ["A FIDGET SPINNER", "MINECRAFT (SURVIVAL)", "MINECRAFT (CREATIVE)", "A DVD MENU"], 
-                correct: 1, 
-                why: "<b>The Imposter:</b> Minecraft Creative. It has blocks and interaction, but it lacks <b>Goals</b> and <b>Challenge</b>. It is a 'Toy.' Survival Mode is the game because you can actually lose." 
-            },
-            { 
-                opts: ["A FLIGHT SIMULATOR", "A JIGSAW PUZZLE", "MARIO KART", "AN ALARM CLOCK"], 
-                correct: 2, 
-                why: "<b>The Imposter:</b> Flight Sim. It has complex rules and interaction, but its objective is 'Mimicry' (copying reality) rather than a competitive win/loss state. Mario Kart is the game." 
-            },
-            { 
-                opts: ["THE STOCK MARKET", "A RUBIK'S CUBE", "A BOXING MATCH", "A WEATHER APP"], 
-                correct: 2, 
-                why: "<b>The Imposter:</b> Rubik's Cube. It's a 'Challenge' or 'Puzzle.' Once you know the algorithm, the interaction is fixed. A Boxing Match is a game because of the dynamic conflict and rules." 
-            },
-            { 
-                opts: ["BANDERSNATCH (FILM)", "SOLITAIRE", "A LEGO SET", "A DICTIONARY"], 
-                correct: 1, 
-                why: "<b>The Imposter:</b> Bandersnatch. It has choices, but no 'Failure State' or skill-based challenge. Solitaire is a game because the rules can prevent you from winning." 
-            },
-            { 
-                opts: ["AN ESCAPE ROOM", "A TECH DEMO", "A SCREENSAVER", "A CALCULATOR"], 
-                correct: 0, 
-                why: "<b>The Imposter:</b> Tech Demo. It looks like a game and has interaction, but it has no <b>Objectives</b> or <b>Rules</b> to restrict the player. An Escape Room is a perfect physical game." 
-            },
-            { 
-                opts: ["A POKER STREAM", "PLAYING POKER", "A SLOT MACHINE", "A COIN FLIP"], 
-                correct: 1, 
-                why: "<b>The Imposter:</b> Slot Machine. It has rules and feedback, but it lacks <b>Challenge (Skill)</b>. It's a gambling tool. Poker requires skill-based interaction to win." 
-            },
-            { 
-                opts: ["SIMCITY", "STARCRAFT", "GOOGLE EARTH", "A MICROWAVE"], 
-                correct: 1, 
-                why: "<b>The Imposter:</b> SimCity. It's often a 'Simulation' or 'Toy' because it lacks a definitive 'Game Over' or win state. StarCraft has an opponent and clear victory conditions." 
-            },
-            { 
-                opts: ["PROFESSIONAL TAG", "A YO-YO", "A MOVIE TRAILER", "A STICK"], 
-                correct: 0, 
-                why: "<b>The Imposter:</b> A Yo-Yo. It requires skill, but there are no <b>Rules</b> or <b>Goals</b> unless you invent them. Tag has strict rules, boundaries, and objectives." 
-            },
-            { 
-                opts: ["A SMART FRIDGE", "EXCEL (WITH FORMULAS)", "A SCAVENGER HUNT", "A MUSIC VIDEO"], 
-                correct: 2, 
-                why: "<b>The Imposter:</b> Excel. It has complex rules and input/output, but the purpose is <b>Utility</b>, not play. A Scavenger Hunt has ludic goals and a win state." 
-            },
-            { 
-                opts: ["THE OLYMPICS", "A GYMNASTICS MAT", "A FIRST DATE", "A BUS MAP"], 
-                correct: 0, 
-                why: "<b>The Imposter:</b> A First Date. It has high interaction and feedback, but it lacks formal <b>Rules</b> and a defined 'Win State.' The Olympics are a system of games." 
-            }
+            { opts: ["A TOY BOX", "CHESS", "AN ALARM CLOCK", "A DICTIONARY"], correct: 1, why: "Chess has a win state and strict rules. A toy box is just a container." },
+            { opts: ["A FLIGHT SIMULATOR", "A JIGSAW PUZZLE", "MARIO KART", "A MOVIE TRAILER"], correct: 2, why: "<b>The Imposter:</b> Flight Sim. It mimics reality but often lacks a 'ludic goal' (winning). Mario Kart is purely about the win." },
+            { opts: ["THE STOCK MARKET", "A FIDGET SPINNER", "A BOXING MATCH", "A CALCULATOR"], correct: 2, why: "Boxing is a game of rules and conflict. The Stock Market is a real-world tool with no artificial 'end'." },
+            { opts: ["MINECRAFT (CREATIVE)", "MINECRAFT (SURVIVAL)", "A SCREENSAVER", "AN IKEA MANUAL"], correct: 1, why: "<b>The Imposter:</b> Creative Mode. It lacks goals/challenges. Survival mode has win/loss states." },
+            { opts: ["BANDERSNATCH (FILM)", "SOLITAIRE", "A LEGO SET", "A PIANO"], correct: 1, why: "Solitaire has a failure state. Bandersnatch is a 'Narrative'—you follow paths, but can't really 'lose'." },
+            { opts: ["A SLOT MACHINE", "POKER", "A COIN FLIP", "A YOUTUBE VIDEO"], correct: 1, why: "<b>The Imposter:</b> Slot Machine. It has rules, but zero player skill (Challenge). Poker requires agency to win." },
+            { opts: ["AN ESCAPE ROOM", "A TECH DEMO", "A BUS MAP", "A SMART FRIDGE"], correct: 0, why: "Escape Rooms are perfect analog games. Tech demos are toys used to show off hardware." },
+            { opts: ["PROFESSIONAL TAG", "A YO-YO", "A WHISTLE", "A POWERPOINT"], correct: 0, why: "Tag has boundaries, rules, and winners. A Yo-Yo is a toy—you play *with* it, not *at* it." },
+            { opts: ["A JIGSAW PUZZLE", "SCRABBLE", "A MICROWAVE", "GOOGLE EARTH"], correct: 1, why: "<b>The Imposter:</b> Jigsaw Puzzles. They are 'Static Challenges.' Scrabble is a dynamic game with an opponent." },
+            { opts: ["THE OLYMPICS", "A GYMNASTICS MAT", "A FIRST DATE", "A BUS SCHEDULE"], correct: 0, why: "Olympics are the ultimate system of games. Dates are social interactions without formal win/loss rules." }
         ];
 
+        const finalDuel = {
+            desc: "SYSTEM DESCRIPTION: 22 agents participate in a 90-minute conflict governed by 17 Laws. They must use their bodies to propel a sphere into a designated zone. If the objective is met equally by both sides at the end of the duration, the system terminates without a victor. Is this a formal game?",
+            ans: true,
+            why: "This is Soccer (Football). Even with a draw, it is a formal game because it has Rules, Objectives, Interaction, Challenge, Feedback, and Participation."
+        };
+
         let cur = 0, scA = 0, scB = 0, locked = false;
+        let wA = 0, wB = 0, choiceA = null, choiceB = null;
 
         function startGame() {
             document.getElementById('disp-a').innerText = document.getElementById('name-a').value || "TEAM 1";
             document.getElementById('disp-b').innerText = document.getElementById('name-b').value || "TEAM 2";
-            document.getElementById('setup-screen').classList.remove('active-screen');
-            document.getElementById('game-screen').classList.add('active-screen');
-            load();
+            show('game-screen'); load();
         }
 
+        function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); }
+
         function load() {
-            locked = false;
-            const r = rounds[cur];
+            locked = false; const r = rounds[cur];
             document.getElementById('round-num').innerText = `${cur+1}/10`;
             document.getElementById('feedback').style.display = "none";
             document.getElementById('next-btn').style.display = "none";
             document.getElementById('turn-txt').innerText = (cur % 2 === 0) ? `${document.getElementById('disp-a').innerText}'S TURN` : `${document.getElementById('disp-b').innerText}'S TURN`;
-            
             document.getElementById('box-a').classList.toggle('active-team', cur % 2 === 0);
             document.getElementById('box-b').classList.toggle('active-team', cur % 2 !== 0);
-
-            for(let i=0; i<4; i++) {
-                const b = document.getElementById('o'+i);
-                b.innerText = r.opts[i];
-                b.className = "opt-btn";
-            }
+            for(let i=0; i<4; i++) { const b = document.getElementById('o'+i); b.innerText = r.opts[i]; b.className = "opt-btn"; }
         }
 
         function check(idx) {
-            if(locked) return;
-            locked = true;
-            const r = rounds[cur];
-            const btn = document.getElementById('o'+idx);
-            
-            if(idx === r.correct) {
-                btn.classList.add('is-correct');
-                if(cur % 2 === 0) mod('a', 1); else mod('b', 1);
-            } else {
-                btn.classList.add('is-wrong');
-                document.getElementById('o'+r.correct).classList.add('is-correct');
-            }
-
-            const fb = document.getElementById('feedback');
-            fb.innerHTML = r.why;
-            fb.style.display = "block";
+            if(locked) return; locked = true; const r = rounds[cur];
+            if(idx === r.correct) { document.getElementById('o'+idx).classList.add('is-correct'); if(cur%2===0) mod('a',1); else mod('b',1); }
+            else { document.getElementById('o'+idx).classList.add('is-wrong'); document.getElementById('o'+r.correct).classList.add('is-correct'); }
+            document.getElementById('feedback').innerHTML = r.why; document.getElementById('feedback').style.display = "block";
             document.getElementById('next-btn').style.display = "block";
         }
 
-        function mod(t, v) {
-            if(t==='a') { scA += v; document.getElementById('score-a').innerText = scA.toString().padStart(2, '0'); }
-            else { scB += v; document.getElementById('score-b').innerText = scB.toString().padStart(2, '0'); }
+        function mod(t,v) { if(t==='a'){ scA+=v; document.getElementById('score-a').innerText=scA.toString().padStart(2,'0'); } else { scB+=v; document.getElementById('score-b').innerText=scB.toString().padStart(2,'0'); } }
+
+        function next() { cur++; if(cur < 10) load(); else triggerWager(); }
+
+        function triggerWager() {
+            document.getElementById('w-name-a').innerText = document.getElementById('disp-a').innerText;
+            document.getElementById('w-name-b').innerText = document.getElementById('disp-b').innerText;
+            document.getElementById('max-a').innerText = scA;
+            document.getElementById('max-b').innerText = scB;
+            show('wager-screen');
         }
 
-        function next() {
-            cur++;
-            if(cur < rounds.length) load();
-            else alert("TEST COMPLETE. FINAL SCORES: " + scA + " - " + scB);
+        function lockWagers() {
+            wA = parseInt(document.getElementById('wager-a').value);
+            wB = parseInt(document.getElementById('wager-b').value);
+            if(wA > scA || wB > scB || wA < 0 || wB < 0) { alert("Invalid wager amount!"); return; }
+            document.getElementById('v-name-a').innerText = document.getElementById('disp-a').innerText;
+            document.getElementById('v-name-b').innerText = document.getElementById('disp-b').innerText;
+            document.getElementById('final-desc').innerText = finalDuel.desc;
+            show('final-screen');
+        }
+
+        function cast(team, val) {
+            if(team === 'a') { choiceA = val; document.getElementById('va-t').className = val ? 'btn-vote locked-in' : 'btn-vote'; document.getElementById('va-f').className = !val ? 'btn-vote locked-in' : 'btn-vote'; }
+            else { choiceB = val; document.getElementById('vb-t').className = val ? 'btn-vote locked-in' : 'btn-vote'; document.getElementById('vb-f').className = !val ? 'btn-vote locked-in' : 'btn-vote'; }
+            if(choiceA !== null && choiceB !== null) document.getElementById('reveal-btn').style.display = "block";
+        }
+
+        function resolveDuel() {
+            const resA = (choiceA === finalDuel.ans) ? wA : -wA;
+            const resB = (choiceB === finalDuel.ans) ? wB : -wB;
+            mod('a', resA); mod('b', resB);
+            alert(`THE TRUTH: ${finalDuel.why}\n\n${document.getElementById('disp-a').innerText}: ${resA > 0 ? '+'+resA : resA}\n${document.getElementById('disp-b').innerText}: ${resB > 0 ? '+'+resB : resB}`);
+            alert("FINAL SCORE: " + scA + " - " + scB);
+            location.reload();
         }
     </script>
 </body>
