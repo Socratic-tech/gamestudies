@@ -3,167 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LUDO-BLAST: THE TRIVIA SHOWDOWN</title>
+    <title>GAME DETECTOR: EXPERT MODE</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Press+Start+2P&family=Orbitron:wght@400;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Press+Start+2P&family=Outfit:wght@400;900&display=swap');
 
         :root {
             --neon-pink: #ff2d55; --neon-blue: #00f2ff; --neon-green: #39ff14;
-            --neon-yellow: #fff200; --dark-bg: #0d0d12; --panel: #16161e;
+            --neon-yellow: #fff200; --dark-bg: #08080a; --panel: #121217;
         }
 
         body { 
-            background-color: var(--dark-bg); color: white; font-family: 'Orbitron', sans-serif; 
-            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-x: hidden;
+            background-color: var(--dark-bg); color: white; font-family: 'Outfit', sans-serif; 
+            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
 
-        /* ANIMATIONS */
-        @keyframes pulse-blue { 0% { box-shadow: 0 0 5px var(--neon-blue); } 50% { box-shadow: 0 0 25px var(--neon-blue); } 100% { box-shadow: 0 0 5px var(--neon-blue); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
-        @keyframes glow-green { 0% { background: #000; } 100% { background: var(--neon-green); color: #000; box-shadow: 0 0 30px var(--neon-green); } }
+        /* HIGH-END ANIMATIONS */
+        @keyframes border-glow { 0% { border-color: #333; } 50% { border-color: var(--neon-blue); } 100% { border-color: #333; } }
+        @keyframes fail-shake { 0% { transform: translateX(0); } 25% { transform: translateX(-10px) rotate(-1deg); } 75% { transform: translateX(10px) rotate(1deg); } 100% { transform: translateX(0); } }
+        @keyframes success-zoom { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 30px var(--neon-green); } 100% { transform: scale(1); } }
 
         .screen { display: none; width: 100%; max-width: 1100px; flex-direction: column; }
-        .active-screen { display: flex; animation: slideIn 0.5s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .active-screen { display: flex; animation: fadeIn 0.4s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* HEADER & SCOREBOARD */
-        .scoreboard { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
-        .team-card { 
-            flex: 1; background: var(--panel); border: 3px solid #333; padding: 15px; border-radius: 15px; text-align: center;
+        /* SCOREBOARD */
+        .scoreboard { display: flex; justify-content: space-between; width: 100%; margin-bottom: 20px; }
+        .team-pod { 
+            flex: 1; background: var(--panel); border: 4px solid #222; padding: 20px; border-radius: 25px; text-align: center;
             transition: 0.3s; position: relative;
         }
-        .active-team { border-color: var(--neon-yellow); animation: pulse-blue 2s infinite; }
-        .score { font-family: 'Press Start 2P', cursive; font-size: 2.5rem; color: var(--neon-green); margin: 10px 0; }
-        .team-label { font-family: 'Bungee'; font-size: 1.2rem; }
+        .active-team { border-color: var(--neon-yellow); box-shadow: 0 0 30px rgba(255, 242, 0, 0.2); }
+        .score { font-family: 'Press Start 2P', cursive; font-size: 3rem; color: #fff; margin: 15px 0; text-shadow: 0 0 10px var(--neon-green); }
 
-        /* CASE DISPLAY */
-        .case-display { 
-            background: #000; border: 4px solid var(--neon-blue); border-radius: 20px; padding: 40px; 
-            text-align: center; margin-bottom: 30px; position: relative; overflow: hidden;
+        /* QUESTION AREA */
+        .question-box {
+            background: #000; border: 2px solid #333; border-radius: 30px; padding: 50px; 
+            text-align: center; margin-bottom: 30px; animation: border-glow 4s infinite;
         }
-        .case-display::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(0,242,255,0.05) 50%, rgba(0,0,0,0) 50%);
-            background-size: 100% 4px; z-index: 1; pointer-events: none;
-        }
+        h2 { font-family: 'Bungee'; font-size: 2.5rem; margin: 0; color: var(--neon-blue); }
+        .expert-tag { background: var(--neon-pink); color: white; padding: 5px 15px; border-radius: 5px; font-family: 'Bungee'; font-size: 0.8rem; display: inline-block; margin-bottom: 10px; }
 
         /* OPTIONS */
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
         .opt-btn {
-            background: #1a1a1f; border: 2px solid #333; color: white; padding: 25px;
-            font-family: 'Orbitron'; font-size: 1rem; border-radius: 12px; cursor: pointer;
-            transition: 0.2s; text-align: left; position: relative;
+            background: #1a1a1f; border: 3px solid #333; color: #aaa; padding: 35px;
+            font-family: 'Bungee'; font-size: 1.4rem; border-radius: 20px; cursor: pointer;
+            transition: 0.2s;
         }
-        .opt-btn:hover { border-color: var(--neon-blue); background: #222; }
-        .opt-btn span { color: var(--neon-blue); font-family: 'Bungee'; margin-right: 10px; font-size: 1.4rem; }
+        .opt-btn:hover { border-color: var(--neon-blue); color: #fff; transform: translateY(-3px); }
 
-        .correct { animation: glow-green 0.3s forwards; border-color: var(--neon-green); }
-        .wrong { animation: shake 0.3s; border-color: var(--neon-pink); background: #300 !important; }
+        .is-correct { background: var(--neon-green) !important; color: #000 !important; border-color: #fff !important; animation: success-zoom 0.5s; }
+        .is-wrong { background: var(--neon-pink) !important; color: #fff !important; border-color: #fff !important; animation: fail-shake 0.3s; }
 
-        /* FOOTER CHEAT SHEET */
+        /* FEEDBACK */
+        .feedback {
+            margin-top: 25px; padding: 25px; border-radius: 20px; font-size: 1.3rem;
+            display: none; background: #111; border: 2px solid var(--neon-blue);
+            line-height: 1.5; color: #ddd;
+        }
+        .feedback b { color: var(--neon-yellow); }
+
+        /* CONTROLS */
+        .nav-btn {
+            margin-top: 30px; font-family: 'Bungee'; padding: 20px 60px; font-size: 1.5rem;
+            background: var(--neon-blue); border: none; border-radius: 50px; cursor: pointer;
+            color: #000; display: none; align-self: center; box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        /* CHEAT SHEET */
         .cheat-sheet {
-            display: flex; justify-content: space-around; background: #000; border: 2px solid #222;
-            padding: 15px; border-radius: 10px; margin-top: 30px; font-size: 0.75rem;
+            display: flex; justify-content: space-around; background: #000; border-top: 2px solid #333;
+            padding: 20px; margin-top: auto; font-size: 0.8rem; width: 100%;
         }
-        .def-item b { color: var(--neon-yellow); display: block; font-size: 0.9rem; margin-bottom: 2px; }
-
-        /* BUTTONS */
-        .btn-ctrl { 
-            background: #222; color: #fff; border: 1px solid #444; padding: 5px 10px; 
-            cursor: pointer; font-family: 'Bungee'; font-size: 0.7rem; border-radius: 5px; 
-        }
-        .nav-next { 
-            margin-top: 20px; font-family: 'Bungee'; padding: 15px 40px; font-size: 1.5rem;
-            background: var(--neon-pink); border: none; border-radius: 50px; cursor: pointer;
-            box-shadow: 0 0 15px var(--neon-pink);
-        }
+        .cheat-sheet div b { color: var(--neon-pink); display: block; margin-bottom: 3px; }
     </style>
 </head>
 <body>
 
-    <div id="setup-screen" class="screen active-screen" style="text-align: center; margin-top: 100px;">
-        <h1 style="font-family: 'Bungee'; font-size: 4rem; color: var(--neon-yellow); margin:0;">LUDO-BLAST</h1>
-        <p style="letter-spacing: 5px; color: var(--neon-blue);">ADVANCED LUDOLOGY SIMULATOR</p>
-        <div style="margin-top: 40px;">
-            <input type="text" id="name-a" placeholder="TEAM 1 NAME" style="padding:15px; font-family:'Bungee'; background:#000; border:2px solid var(--neon-blue); color:white; width: 300px;">
-            <input type="text" id="name-b" placeholder="TEAM 2 NAME" style="padding:15px; font-family:'Bungee'; background:#000; border:2px solid var(--neon-pink); color:white; width: 300px; margin-left: 10px;">
+    <div id="setup-screen" class="screen active-screen" style="text-align: center; margin-top: 80px;">
+        <div class="expert-tag">LEVEL: BRUTAL</div>
+        <h1 style="font-family: 'Bungee'; font-size: 5rem; color: #fff; margin:0;">GAME DETECTOR</h1>
+        <p style="font-family: 'Bungee'; color: var(--neon-blue); letter-spacing: 4px;">FIND THE TRUE SYSTEM</p>
+        
+        <div style="margin-top: 50px;">
+            <input type="text" id="name-a" placeholder="TEAM 1" style="padding:15px; font-family:'Bungee'; background:#111; border:2px solid #333; color:white; width: 300px; text-align: center; font-size: 1.2rem;">
+            <input type="text" id="name-b" placeholder="TEAM 2" style="padding:15px; font-family:'Bungee'; background:#111; border:2px solid #333; color:white; width: 300px; text-align: center; font-size: 1.2rem; margin-left: 10px;">
             <br><br>
-            <button class="nav-next" onclick="startGame()">ENGAGE</button>
+            <button class="nav-btn" style="display:inline-block;" onclick="startGame()">INITIALIZE TEST</button>
         </div>
     </div>
 
     <div id="game-screen" class="screen">
         <div class="scoreboard">
-            <div id="box-a" class="team-card active-team">
-                <div id="disp-a" class="team-label" style="color: var(--neon-blue);">TEAM A</div>
+            <div id="box-a" class="team-pod active-team">
+                <div id="disp-a" style="font-family: 'Bungee'; color: var(--neon-blue);">TEAM A</div>
                 <div id="score-a" class="score">00</div>
-                <button class="btn-ctrl" onclick="mod('a',1)">+ BONUS</button>
-                <button class="btn-ctrl" onclick="mod('a',-1)">-</button>
+                <button onclick="mod('a', 1)" style="font-family: 'Bungee'; border:none; background:#333; color:white; cursor:pointer; border-radius:5px;">+ BONUS</button>
             </div>
-            <div style="text-align: center;">
-                <h3 id="round-num" style="color: var(--neon-yellow); margin-bottom: 5px;">ROUND 1/10</h3>
-                <div id="turn-txt" style="font-size: 0.8rem; color: #aaa;">INITIALIZING...</div>
+            <div style="text-align: center; padding-top: 20px;">
+                <h3 id="round-num" style="color: var(--neon-yellow); font-family: 'Bungee'; font-size: 2rem; margin:0;">1/10</h3>
+                <div id="turn-txt" style="font-family: 'Bungee'; font-size: 0.7rem; color: #555; margin-top:5px;">TEAM 1 TURN</div>
             </div>
-            <div id="box-b" class="team-card">
-                <div id="disp-b" class="team-label" style="color: var(--neon-pink);">TEAM B</div>
+            <div id="box-b" class="team-pod">
+                <div id="disp-b" style="font-family: 'Bungee'; color: var(--neon-pink);">TEAM B</div>
                 <div id="score-b" class="score">00</div>
-                <button class="btn-ctrl" onclick="mod('b',1)">+ BONUS</button>
-                <button class="btn-ctrl" onclick="mod('b',-1)">-</button>
+                <button onclick="mod('b', 1)" style="font-family: 'Bungee'; border:none; background:#333; color:white; cursor:pointer; border-radius:5px;">+ BONUS</button>
             </div>
         </div>
 
-        <div class="case-display">
-            <h2 id="q-name" style="font-family: 'Bungee'; font-size: 2.5rem; margin: 0; color: var(--neon-blue);">THE CASE</h2>
-            <p id="q-desc" style="font-size: 1.2rem; color: #fff; margin: 15px 0;"></p>
-            <p id="q-explain" style="display:none; color: var(--neon-green); font-style: italic; border-top: 1px solid #333; padding-top: 10px;"></p>
+        <div class="question-box">
+            <h2 id="q-text">WHICH OF THESE IS A FORMAL GAME?</h2>
         </div>
 
         <div class="options-grid">
-            <button class="opt-btn" onclick="hit(0)"><span>A</span> <div id="o0"></div></button>
-            <button class="opt-btn" onclick="hit(1)"><span>B</span> <div id="o1"></div></button>
-            <button class="opt-btn" onclick="hit(2)"><span>C</span> <div id="o2"></div></button>
-            <button class="opt-btn" onclick="hit(3)"><span>D</span> <div id="o3"></div></button>
+            <button class="opt-btn" onclick="check(0)" id="o0"></button>
+            <button class="opt-btn" onclick="check(1)" id="o1"></button>
+            <button class="opt-btn" onclick="check(2)" id="o2"></button>
+            <button class="opt-btn" onclick="check(3)" id="o3"></button>
         </div>
 
-        <div style="text-align: center;">
-            <button id="next-btn" class="nav-next" style="display:none;" onclick="next()">NEXT ROUND >></button>
-            <button id="bonus-btn" class="nav-next" style="display:none; background: var(--neon-yellow); color:#000;" onclick="startBonus()">ACTIVATE BONUS ROUND</button>
-        </div>
+        <div id="feedback" class="feedback"></div>
+        <button id="next-btn" class="nav-btn" onclick="next()">NEXT ROUND >></button>
 
         <div class="cheat-sheet">
-            <div class="def-item"><b>RULES</b>Constraints</div>
-            <div class="def-item"><b>OBJECTIVES</b>Goals/Win-Loss</div>
-            <div class="def-item"><b>INTERACTION</b>Input/Output</div>
-            <div class="def-item"><b>CHALLENGE</b>Skill/Effort</div>
-            <div class="def-item"><b>FEEDBACK</b>System Response</div>
-            <div class="def-item"><b>PARTICIPATION</b>Active Doing</div>
+            <div><b>RULES</b>The Limits</div>
+            <div><b>GOALS</b>Win or Lose</div>
+            <div><b>INTERACTION</b>Choices</div>
+            <div><b>CHALLENGE</b>Effort</div>
+            <div><b>RESPONSE</b>Feedback</div>
+            <div><b>DOING</b>Participation</div>
         </div>
     </div>
 
     <script>
-        const lib = [
-            { n: "THE SLOT MACHINE", d: "High lights, loud sounds, and a 'pull' mechanic.", o: ["A Game: Rules and high feedback.", "Not a Game: Lacks Player Agency/Challenge.", "A Game: Clear win/loss state.", "Not a Game: It's physical, not digital."], c: 1, e: "Without player skill/strategy (Challenge), it's a gambling system, not a game." },
-            { n: "BANDERSNATCH", d: "Netflix film where you click to choose the path.", o: ["Interactive Media: Lacks a Failure State/Skill.", "A Game: Choice equals gameplay.", "Not a Game: It's just a long movie.", "A Game: It uses a controller."], c: 0, e: "Lacks 'Challenge' and 'Win/Loss' objectives; it's a branching narrative." },
-            { n: "EXCEL SPREADSHEETS", d: "Cells, math, and logical input/output rules.", o: ["A Game: It has rules and interaction.", "Not a Game: Lacks play-focused Objectives.", "A Game: Solving a formula is a challenge.", "Not a Game: It's boring."], c: 1, e: "It's a Tool. Systems need ludic objectives (goals for play) to be games." },
-            { n: "PROFESSIONAL TAG", d: "Adults chasing each other in a structured arena.", o: ["Not a Game: Tag is for children.", "A Game: Rules, Interaction, and clear Objective.", "Interactive Media: No digital screen used.", "A Tool: It's for fitness training."], c: 1, e: "Meets all 6 criteria perfectly, regardless of the 'medium' (physical vs digital)." },
-            { n: "PELOTON BIKE", d: "Exercise bike with a live leaderboard and points.", o: ["A Game: High feedback and competition.", "Gamified Tool: Work/Fitness with game layers.", "Not a Game: It requires physical effort.", "A Game: You can win the race."], c: 1, e: "This is 'Gamification'—applying game elements to non-game tasks (Exercise)." },
-            { n: "THE STOCK MARKET", d: "Buying/selling shares based on global data.", o: ["A Game: Clear score (money) and rules.", "Not a Game: No set 'Win/Loss' or game bounds.", "A Game: It's the highest stakes game on Earth.", "Not a Game: It lacks feedback."], c: 1, e: "An open system/utility. It has no artificial conflict or ludic objectives." },
-            { n: "FLIGHT SIMULATOR", d: "Perfectly recreating a Boeing 747 flight to London.", o: ["A Game: Pilots find it difficult.", "A Simulation: Lacks ludic goals (Win/Loss).", "A Game: It has a clear objective (Land).", "Interactive Media: It's just a video."], c: 1, e: "Simulators focus on 'Mimicry' and 'Rules' but often lack game 'Objectives'." },
-            { n: "CONWAY'S GAME OF LIFE", d: "Cells that live or die based on math with zero player input.", o: ["A Game: It has 'Game' in the title.", "Not a Game: Lacks Participation/Interaction.", "A Game: It has rules and feedback.", "A Tool: It's used for biology study."], c: 1, e: "It's a 'Zero-Player Game'—more of a mathematical toy than a game." },
-            { n: "ESCAPE ROOM", d: "Locked in a room with 60 minutes to solve puzzles.", o: ["Interactive Media: It's a live event.", "A Game: Rules, Objectives, Challenge, Feedback.", "A Tool: It's for team building only.", "Not a Game: No digital participation."], c: 1, e: "A perfect analog game. Digital screens are not a requirement for ludology!" },
-            { n: "TINDER / DATING APPS", d: "Swiping, matching, and messaging 'players'.", o: ["A Game: Swiping is an interaction loop.", "A Tool: It's a utility for social connection.", "Gamified Tool: Uses feedback loops for utility.", "A Game: You win when you get a date."], c: 2, e: "Uses game-like 'Feedback' and 'Interaction' to facilitate a real-world utility." }
+        const rounds = [
+            { 
+                opts: ["A FIDGET SPINNER", "MINECRAFT (SURVIVAL)", "MINECRAFT (CREATIVE)", "A DVD MENU"], 
+                correct: 1, 
+                why: "<b>The Imposter:</b> Minecraft Creative. It has blocks and interaction, but it lacks <b>Goals</b> and <b>Challenge</b>. It is a 'Toy.' Survival Mode is the game because you can actually lose." 
+            },
+            { 
+                opts: ["A FLIGHT SIMULATOR", "A JIGSAW PUZZLE", "MARIO KART", "AN ALARM CLOCK"], 
+                correct: 2, 
+                why: "<b>The Imposter:</b> Flight Sim. It has complex rules and interaction, but its objective is 'Mimicry' (copying reality) rather than a competitive win/loss state. Mario Kart is the game." 
+            },
+            { 
+                opts: ["THE STOCK MARKET", "A RUBIK'S CUBE", "A BOXING MATCH", "A WEATHER APP"], 
+                correct: 2, 
+                why: "<b>The Imposter:</b> Rubik's Cube. It's a 'Challenge' or 'Puzzle.' Once you know the algorithm, the interaction is fixed. A Boxing Match is a game because of the dynamic conflict and rules." 
+            },
+            { 
+                opts: ["BANDERSNATCH (FILM)", "SOLITAIRE", "A LEGO SET", "A DICTIONARY"], 
+                correct: 1, 
+                why: "<b>The Imposter:</b> Bandersnatch. It has choices, but no 'Failure State' or skill-based challenge. Solitaire is a game because the rules can prevent you from winning." 
+            },
+            { 
+                opts: ["AN ESCAPE ROOM", "A TECH DEMO", "A SCREENSAVER", "A CALCULATOR"], 
+                correct: 0, 
+                why: "<b>The Imposter:</b> Tech Demo. It looks like a game and has interaction, but it has no <b>Objectives</b> or <b>Rules</b> to restrict the player. An Escape Room is a perfect physical game." 
+            },
+            { 
+                opts: ["A POKER STREAM", "PLAYING POKER", "A SLOT MACHINE", "A COIN FLIP"], 
+                correct: 1, 
+                why: "<b>The Imposter:</b> Slot Machine. It has rules and feedback, but it lacks <b>Challenge (Skill)</b>. It's a gambling tool. Poker requires skill-based interaction to win." 
+            },
+            { 
+                opts: ["SIMCITY", "STARCRAFT", "GOOGLE EARTH", "A MICROWAVE"], 
+                correct: 1, 
+                why: "<b>The Imposter:</b> SimCity. It's often a 'Simulation' or 'Toy' because it lacks a definitive 'Game Over' or win state. StarCraft has an opponent and clear victory conditions." 
+            },
+            { 
+                opts: ["PROFESSIONAL TAG", "A YO-YO", "A MOVIE TRAILER", "A STICK"], 
+                correct: 0, 
+                why: "<b>The Imposter:</b> A Yo-Yo. It requires skill, but there are no <b>Rules</b> or <b>Goals</b> unless you invent them. Tag has strict rules, boundaries, and objectives." 
+            },
+            { 
+                opts: ["A SMART FRIDGE", "EXCEL (WITH FORMULAS)", "A SCAVENGER HUNT", "A MUSIC VIDEO"], 
+                correct: 2, 
+                why: "<b>The Imposter:</b> Excel. It has complex rules and input/output, but the purpose is <b>Utility</b>, not play. A Scavenger Hunt has ludic goals and a win state." 
+            },
+            { 
+                opts: ["THE OLYMPICS", "A GYMNASTICS MAT", "A FIRST DATE", "A BUS MAP"], 
+                correct: 0, 
+                why: "<b>The Imposter:</b> A First Date. It has high interaction and feedback, but it lacks formal <b>Rules</b> and a defined 'Win State.' The Olympics are a system of games." 
+            }
         ];
 
-        const bonus = [
-            { n: "THE UNITED NATIONS", d: "Nations negotiating under strict international rules.", o: ["A Game: Rules, interaction, and win/loss.", "Not a Game: The consequences are non-ludic (real).", "A Game: Diplomats play for power.", "Interactive Media: They use microphones."], c: 1, e: "Games are 'Separate' from real life. When consequences are real, it's not a game." },
-            { n: "EVOLUTION", d: "DNA rules and the 'Win State' of species survival.", o: ["A Game: Nature is the designer.", "Not a Game: Lacks conscious Agency/Participation.", "A Game: Survival is the ultimate objective.", "A Simulation: Nature is just math."], c: 1, e: "Games require 'Players'—conscious agents choosing to participate." }
-        ];
-
-        let cur = 0, scA = 0, scB = 0, locked = false, isB = false;
+        let cur = 0, scA = 0, scB = 0, locked = false;
 
         function startGame() {
-            document.getElementById('disp-a').innerText = document.getElementById('name-a').value || "TEAM A";
-            document.getElementById('disp-b').innerText = document.getElementById('name-b').value || "TEAM B";
+            document.getElementById('disp-a').innerText = document.getElementById('name-a').value || "TEAM 1";
+            document.getElementById('disp-b').innerText = document.getElementById('name-b').value || "TEAM 2";
             document.getElementById('setup-screen').classList.remove('active-screen');
             document.getElementById('game-screen').classList.add('active-screen');
             load();
@@ -171,49 +201,52 @@
 
         function load() {
             locked = false;
-            const q = isB ? bonus[cur] : lib[cur];
-            document.getElementById('q-name').innerText = q.n;
-            document.getElementById('q-desc').innerText = q.d;
-            document.getElementById('q-explain').style.display = "none";
+            const r = rounds[cur];
+            document.getElementById('round-num').innerText = `${cur+1}/10`;
+            document.getElementById('feedback').style.display = "none";
             document.getElementById('next-btn').style.display = "none";
-            document.getElementById('round-num').innerText = `ROUND ${cur+1}/${isB ? bonus.length : lib.length}`;
             document.getElementById('turn-txt').innerText = (cur % 2 === 0) ? `${document.getElementById('disp-a').innerText}'S TURN` : `${document.getElementById('disp-b').innerText}'S TURN`;
             
-            for(let i=0; i<4; i++) {
-                const b = document.querySelectorAll('.opt-btn')[i];
-                b.className = 'opt-btn';
-                document.getElementById('o'+i).innerText = q.o[i];
-            }
             document.getElementById('box-a').classList.toggle('active-team', cur % 2 === 0);
             document.getElementById('box-b').classList.toggle('active-team', cur % 2 !== 0);
+
+            for(let i=0; i<4; i++) {
+                const b = document.getElementById('o'+i);
+                b.innerText = r.opts[i];
+                b.className = "opt-btn";
+            }
         }
 
-        function hit(idx) {
+        function check(idx) {
             if(locked) return;
             locked = true;
-            const q = isB ? bonus[cur] : lib[cur];
-            const btns = document.querySelectorAll('.opt-btn');
-            if(idx === q.c) {
-                btns[idx].classList.add('correct');
+            const r = rounds[cur];
+            const btn = document.getElementById('o'+idx);
+            
+            if(idx === r.correct) {
+                btn.classList.add('is-correct');
                 if(cur % 2 === 0) mod('a', 1); else mod('b', 1);
             } else {
-                btns[idx].classList.add('wrong');
-                btns[q.c].classList.add('correct');
+                btn.classList.add('is-wrong');
+                document.getElementById('o'+r.correct).classList.add('is-correct');
             }
-            document.getElementById('q-explain').innerText = q.e;
-            document.getElementById('q-explain').style.display = "block";
-            
-            if(!isB && cur === lib.length-1) document.getElementById('bonus-btn').style.display = "inline-block";
-            else document.getElementById('next-btn').style.display = "inline-block";
+
+            const fb = document.getElementById('feedback');
+            fb.innerHTML = r.why;
+            fb.style.display = "block";
+            document.getElementById('next-btn').style.display = "block";
         }
 
         function mod(t, v) {
-            if(t==='a') { scA += v; document.getElementById('score-a').innerText = scA.toString().padStart(2,'0'); }
-            else { scB += v; document.getElementById('score-b').innerText = scB.toString().padStart(2,'0'); }
+            if(t==='a') { scA += v; document.getElementById('score-a').innerText = scA.toString().padStart(2, '0'); }
+            else { scB += v; document.getElementById('score-b').innerText = scB.toString().padStart(2, '0'); }
         }
 
-        function next() { cur++; load(); }
-        function startBonus() { isB = true; cur = 0; document.getElementById('bonus-btn').style.display="none"; load(); }
+        function next() {
+            cur++;
+            if(cur < rounds.length) load();
+            else alert("TEST COMPLETE. FINAL SCORES: " + scA + " - " + scB);
+        }
     </script>
 </body>
 </html>
