@@ -170,6 +170,9 @@
         };
 
         let cur = 0, scA = 0, scB = 0, locked = false;
+        let order = [0, 1, 2, 3]; // order[buttonIndex] = index into rounds[cur].opts
+
+        function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
         let wagerA = 0, wagerB = 0, choiceA = null, choiceB = null;
 
         function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen')); document.getElementById(id).classList.add('active-screen'); window.scrollTo(0,0); }
@@ -188,15 +191,17 @@
             document.getElementById('turn-txt').innerText = (cur % 2 === 0) ? `${document.getElementById('disp-a').innerText}'S TURN` : `${document.getElementById('disp-b').innerText}'S TURN`;
             document.getElementById('box-a').classList.toggle('active-team', cur % 2 === 0);
             document.getElementById('box-b').classList.toggle('active-team', cur % 2 !== 0);
-            for(let i=0; i<4; i++) { const b = document.getElementById('o'+i); b.innerText = r.opts[i]; b.className = "opt-btn"; }
+            order = shuffle([0, 1, 2, 3]);
+            for(let i=0; i<4; i++) { const b = document.getElementById('o'+i); b.innerText = r.opts[order[i]]; b.className = "opt-btn"; }
         }
 
         function check(idx) {
             if(locked) return; locked = true; const r = rounds[cur];
             const btn = document.getElementById('o'+idx);
-            if(idx === r.correct) { btn.classList.add('is-correct'); if(cur%2===0) mod('a',1); else mod('b',1); }
-            else { btn.classList.add('is-wrong'); document.getElementById('o'+r.correct).classList.add('is-correct'); }
-            document.getElementById('feedback').innerHTML = r.why; document.getElementById('feedback').style.display = "block";
+            const correctBtn = order.indexOf(r.correct);
+            if(idx === correctBtn) { btn.classList.add('is-correct'); if(cur%2===0) mod('a',1); else mod('b',1); }
+            else { btn.classList.add('is-wrong'); document.getElementById('o'+correctBtn).classList.add('is-correct'); }
+            document.getElementById('feedback').textContent = r.why; document.getElementById('feedback').style.display = "block";
             document.getElementById('next-btn').style.display = "block";
         }
 
